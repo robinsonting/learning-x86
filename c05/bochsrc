@@ -1,0 +1,14 @@
+megs: 32
+
+romimage: file=$BXHOME/share/bochs/BIOS-bochs-latest
+vgaromimage: file=$BXHOME/share/bochs/VGABIOS-lgpl-latest
+
+floppya: image=$BX_MBR, status=inserted
+
+boot: floppy
+
+#log: bochsout.txt
+
+mouse: enabled=0
+
+keyboard: keymap=$BXHOME/share/bochs/keymaps/sdl-pc-us.map
