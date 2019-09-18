@@ -1,24 +1,14 @@
 #!/usr/bin/env bash
 
-TEMP=$(getopt -o d:f: -l directory:,asm:,bin:,img: -- "$@")
+set -e
+
+TEMP=$(getopt -o f: -- "$@")
 eval set -- "$TEMP"
 
 while true; do
   case "$1" in
-  -d|--directory)
-    directory=$2
-    shift 2
-    ;;
-  -f|--asm)
+  -f)
     asm=$2
-    shift 2
-    ;;
-  --bin)
-    bin=$2
-    shift 2
-    ;;
-  --img)
-    img=$2
     shift 2
     ;;
   --)
@@ -32,25 +22,25 @@ while true; do
   esac
 done
 
-if [ -z "$directory" ]; then
-  echo "you must specify directory with -d or --directory"
-  exit 1
-fi
-
 if [ -z "$asm" ]; then
-  echo "you must specify assembly file name with -f or --asm"
+  echo "you must specify assembly file name with -f"
   exit 1
 fi
 
-# TODO 验证是否存在$filename.asm
+if [ "${asm##*.}" != "asm" ]; then
+  echo "assembly file should be *.asm"
+  exit 1
+fi
 
-filename=$(basename "$asm" .asm)
-[ -z "$asm" ] && asm="$filename.asm"
-asm="$directory/$asm"
+if [ ! -f "$asm" ]; then
+  echo "assembly file '$asm' dose not exist"
+  exit 1
+fi
+
+
+filename=${asm%%.*}
 [ -z "$bin" ] && bin="$filename.bin"
-bin="$directory/$bin"
 [ -z "$img" ] && img="$filename.img"
-img="$directory/$img"
 
 if [ ! -f "$img" ]; then
   bximage -mode=create -fd=160k -q "$img"
