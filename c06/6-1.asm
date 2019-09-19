@@ -33,16 +33,15 @@ divide:
 
     mov bx, number
     mov si, (start - number) - 1
-    mov cx, (start - number)
 
 print:
     mov al, [bx + si]
-    dec si
     add al, 0x30
     mov ah, 0x04
     mov [es:di], ax
     add di, 2
-    loop print
+    dec si                          ; 之前这句是在mov al, [bx + si]后面，这样操作顺序更接近，但采用了jns方式专跳的话，就必须置于jns print之前，至少add操作是会改变sf等几个eflags值的
+    jns print
 
 jmp $
 times 510 - ($ - $$) db 0
