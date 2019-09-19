@@ -31,12 +31,13 @@ divide:
     inc bx
     loop divide
 
-    mov bx, start - 1
+    mov bx, number
+    mov si, (start - number) - 1
     mov cx, (start - number)
 
 print:
-    mov al, [bx]
-    dec bx
+    mov al, [bx + si]
+    dec si
     add al, 0x30
     mov ah, 0x04
     mov [es:di], ax
