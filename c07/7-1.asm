@@ -11,12 +11,10 @@ start:
     mov es, ax
 
     mov ax, 0
-    mov cx, 1
+    mov cx, 100
 sum:
     add ax, cx
-    inc cx
-    cmp cx, 100
-    jle sum
+    loop sum
 
     xor cx, cx
     mov ss, cx
