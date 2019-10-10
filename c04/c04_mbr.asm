@@ -1,4 +1,4 @@
-; 4-2.asm
+; c04_mbr.asm
 
 mov ax,0xb800
 mov ds,ax
