@@ -1,14 +1,15 @@
-megs: 32
-
 romimage: file=$BXHOME/share/bochs/BIOS-bochs-latest
 vgaromimage: file=$BXHOME/share/bochs/VGABIOS-lgpl-latest
 
-floppya: image=$BX_MBR, status=inserted
+memory: guest=32, host=64
 
-boot: floppy
+#floppya: image=$BX_MBR, status=inserted
+ata0: enabled=1, ioaddr1=0x1f0, ioaddr2=0x3f0, irq=14
+ata0-master: type=disk, path=$BX_MBR, mode=flat
 
-#log: bochsout.txt
+boot: disk
 
 mouse: enabled=0
-
 keyboard: keymap=$BXHOME/share/bochs/keymaps/sdl-pc-us.map
+
+#log: bochsout.txt
