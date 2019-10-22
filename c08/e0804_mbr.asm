@@ -1,9 +1,8 @@
-; 目的：通过调用方式访问硬盘
-; 效果：打印"1 + 2 + 3 + ... + 1000 = "
+; 目的：模拟从硬盘读取程序
+; 效果：目标程序加载到0x1000段
 
 section mbr vstart=0x7c00
 
-            ; 如果不设置栈帧，会如何？可能因为没有再用到被保护的寄存器，所以没有设置，也没出现问题
             mov ax, 0x1000
             mov ds, ax                      ; 设置数据段，以下读取的硬盘数据存放于此段
             mov ax, 0
@@ -15,9 +14,25 @@ section mbr vstart=0x7c00
             xor bx, bx                      ; 保存读取数据的基址
             call read_one_sector
 
+            mov ax, [0]                     ; 读取"程序"的长度
+            mov dx, [2]
+
+            mov bx, 512
+            div bx
+            mov cx, ax
+            dec cx
+            cmp dx, 0
+            jne @1
+    @1:
+            inc cx                          ; 求出要读取多少次硬盘
+    load:
+            mov ax, ds
+            add ax, 0x0020
+            mov ds, ax
+            inc di
             xor bx, bx
-            mov di, text_end - text
-            call print
+            call read_one_sector
+            loop load
 
             jmp $
 
@@ -79,40 +94,13 @@ section mbr vstart=0x7c00
 
             ret
 
-    ; 打印
-    print:
-            push ax
-            push bx
-            push cx
-            push dx
-            push di
-            push si
-
-            mov ax, 0xb800
-            mov es, ax
-            mov cx, di
-            mov di, 0xb40
-            mov ah, 0x07
-        @1:
-            mov al, [bx]
-            inc bx
-            mov [es:di], ax
-            add di, 2
-            loop @1
-
-            pop si
-            pop di
-            pop dx
-            pop cx
-            pop bx
-            pop ax
-
-            ret
-
             times 510 - ($ - $$)    db 0
                                     db 0x55, 0xaa
 
-        text:
-            db '1 + 2 + 3 + ... + 1000 = '
-        text_end:
-            times 512 - ($ - text)  db 0
+section program vstart=0
+    length  dd 1025
+            times 512 - ($ - length)    db 0
+    test1   db 1
+            times 512 - ($ - test1)     db 0
+    test2   db 2
+            times 512 - ($ - test2)     db 0
