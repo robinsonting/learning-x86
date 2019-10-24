@@ -19,12 +19,16 @@ section mbr vstart=0x7c00
 
             mov bx, 512
             div bx
-            mov cx, ax
-            dec cx
+
+            dec ax                          ; 先减去1，因为已经读取过一次硬盘了
             cmp dx, 0
-            jne @1
+            je @1
+            inc ax
     @1:
-            inc cx                          ; 求出要读取多少次硬盘
+            cmp ax, 0
+            je user_program
+
+            mov cx, ax
     load:
             mov ax, ds
             add ax, 0x0020
@@ -34,6 +38,7 @@ section mbr vstart=0x7c00
             call read_one_sector
             loop load
 
+    user_program:                           ; 模拟用户程序
             jmp $
 
     ; 读取1个扇区的数据
@@ -98,7 +103,7 @@ section mbr vstart=0x7c00
                                     db 0x55, 0xaa
 
 section program vstart=0
-    length  dd 1025
+    length: dd 511
             times 512 - ($ - length)    db 0
     test1   db 1
             times 512 - ($ - test1)     db 0
