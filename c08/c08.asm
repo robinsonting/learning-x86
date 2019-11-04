@@ -35,14 +35,68 @@ section code align=16 vstart=0
 
             mov ax, 0xb800
             mov es, ax
-            mov ch, 0x07
-            shl bx, 1
-            mov [es:bx], cx
+            mov ah, 0x07
+            mov al, cl
+            shl di, 1
+            mov [es:di], ax
+            shr di, 1
+            inc di
+            call set_cursor
 
             pop es
             pop bx
             pop ax
 
+            ret
+
+    get_cursor:
+            push ax
+            push dx
+
+            mov dx, 0x3d4
+            mov al, 0xe
+            out dx, al
+            mov dx, 0x3d5
+            in al, dx
+            mov ah, al
+
+            mov dx, 0x3d4
+            mov al, 0xf
+            out dx, al
+            mov dx, 0x3d5
+            in al, dx
+
+            mov di, ax
+
+            pop dx
+            pop ax
+
+            ret
+
+    set_cursor:
+            push ax
+            push dx
+            push bx
+
+            mov bx, di
+            mov dx, 0x3d4
+            mov al, 0xe
+            out dx, al
+            mov dx, 0x3d5
+            mov al, bh
+            out dx, al
+
+            mov dx, 0x3d4
+            mov al, 0xf
+            out dx, al
+            mov dx, 0x3d5
+            mov al, bl
+            out dx, al
+
+            pop bx
+            pop dx
+            pop ax
+            
             ret
 
     start:
@@ -53,6 +107,7 @@ section code align=16 vstart=0
             mov ax, [data_section]
             mov ds, ax
             mov bx, text
+            call get_cursor
             call print_string
 
             jmp $
