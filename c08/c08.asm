@@ -21,13 +21,25 @@ section code align=16 vstart=0
             mov cl, [bx]
             or cl, cl       ; 我写的是cmp cl, 0，参考作者代码，是否因为都是寄存器操作所以更快？
             jz .exit
+            cmp cl, 0x0d
+            jz .call_0d
+            cmp cl, 0x0a
+            jz .call_0a
             call print_char
+        .back:
             inc bx
             jmp print_string
-
         .exit:
             ret
+        
+        .call_0d:
+            call print_0d
+            jmp .back
 
+        .call_0a:
+            call print_0a
+            jmp .back
+        
     print_char:
             push ax
             push bx
@@ -42,10 +54,34 @@ section code align=16 vstart=0
             shr di, 1
             inc di
             call set_cursor
-
+        
             pop es
             pop bx
             pop ax
+
+            ret
+
+    print_0d:
+            push ax
+            push bx
+            push dx
+
+            mov ax, di
+            mov bx, 80
+            xor dx, dx
+            div bx
+            sub di, dx
+            call set_cursor
+
+            pop dx
+            pop bx
+            pop ax
+
+            ret
+
+    print_0a:
+            add di, 80
+            call set_cursor
 
             ret
 
@@ -117,19 +153,19 @@ section data align=16 vstart=0
             db '  This is NASM - the famous Netwide Assembler. '
             db 'Back at SourceForge and in intensive development! '
             db 'Get the current versions from http://www.nasm.us/.'
-            db 0x0d,0x0a,0x0d,0x0a
-            db '  Example code for calculate 1+2+...+1000:',0x0d,0x0a,0x0d,0x0a
-            db '     xor dx,dx',0x0d,0x0a
-            db '     xor ax,ax',0x0d,0x0a
-            db '     xor cx,cx',0x0d,0x0a
-            db '  @@:',0x0d,0x0a
-            db '     inc cx',0x0d,0x0a
-            db '     add ax,cx',0x0d,0x0a
-            db '     adc dx,0',0x0d,0x0a
-            db '     inc cx',0x0d,0x0a
-            db '     cmp cx,1000',0x0d,0x0a
-            db '     jle @@',0x0d,0x0a
-            db '     ... ...(Some other codes)',0x0d,0x0a,0x0d,0x0a
+            db 0x0d, 0x0a, 0x0d, 0x0a
+            db '  Example code for calculate 1 + 2 + ... + 1000 = ', 0x0d, 0x0a, 0x0d, 0x0a
+            db '     xor dx, dx', 0x0d, 0x0a
+            db '     xor ax, ax', 0x0d, 0x0a
+            db '     xor cx, cx', 0x0d, 0x0a
+            db '  @@:', 0x0d, 0x0a
+            db '     inc cx', 0x0d, 0x0a
+            db '     add ax, cx', 0x0d, 0x0a
+            db '     adc dx, 0', 0x0d, 0x0a
+            db '     inc cx', 0x0d, 0x0a
+            db '     cmp cx, 1000', 0x0d, 0x0a
+            db '     jle @@', 0x0d, 0x0a
+            db '     ... ...(Some other codes)', 0x0d, 0x0a, 0x0d, 0x0a
             db '  The above contents is written by LeeChung. '
             db '2011-05-06'
             db 0
