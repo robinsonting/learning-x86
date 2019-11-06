@@ -27,6 +27,8 @@ section code align=16 vstart=0
             jz .call_0a
             call print_char
         .back:
+            cmp di, 2000
+            jz .scroll
             inc bx
             jmp print_string
         .exit:
@@ -38,6 +40,10 @@ section code align=16 vstart=0
 
         .call_0a:
             call print_0a
+            jmp .back
+        
+        .scroll:
+            call scroll
             jmp .back
         
     print_char:
@@ -82,6 +88,41 @@ section code align=16 vstart=0
     print_0a:
             add di, 80
             call set_cursor
+
+            ret
+
+    scroll:
+            push ax
+            push bx
+            push cx
+            push si
+            push ds
+
+            mov ax, 0xb800
+            mov ds, ax          ; 这句很重要，否则就不是移动的0xb800区域的数据
+            mov es, ax
+
+            cld
+            mov di, 0
+            mov si, 160
+            mov cx, 2000 - 80
+            rep movsw
+
+            mov bx, di
+            mov cx, 80
+        .cls:
+            mov word [es:bx], 0x0720    ; 黑底白字的空格
+            add bx, 2
+            loop .cls
+
+            shr di, 1
+            call set_cursor
+
+            pop ds
+            pop si
+            pop cx
+            pop bx
+            pop ax
 
             ret
 
@@ -150,6 +191,7 @@ section code align=16 vstart=0
 
 section data align=16 vstart=0
     text:
+            db 0x0a
             db '  This is NASM - the famous Netwide Assembler. '
             db 'Back at SourceForge and in intensive development! '
             db 'Get the current versions from http://www.nasm.us/.'
@@ -166,8 +208,9 @@ section data align=16 vstart=0
             db '     cmp cx, 1000', 0x0d, 0x0a
             db '     jle @@', 0x0d, 0x0a
             db '     ... ...(Some other codes)', 0x0d, 0x0a, 0x0d, 0x0a
-            db '  The above contents is written by LeeChung. '
-            db '2011-05-06'
+            db '  The above contents is written by LeeChung. ', 0x0d, 0x0a, 0x0d, 0x0a
+            db '                                                                        5/6/2011'
+            db 0x0d, 0x0a
             db 0
 
 section stack align=16 vstart=0
