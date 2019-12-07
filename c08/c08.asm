@@ -20,31 +20,13 @@ section code align=16 vstart=0
     print_string:
             mov cl, [bx]
             or cl, cl       ; 我写的是cmp cl, 0，参考作者代码，是否因为都是寄存器操作所以更快？
-            jz .exit
-            cmp cl, 0x0d
-            jz .call_0d
-            cmp cl, 0x0a
-            jz .call_0a
+            jz .exit_print_string
             call print_char
-        .back:
-            cmp di, 2000
-            jz .scroll
             inc bx
             jmp print_string
-        .exit:
+            
+        .exit_print_string:
             ret
-        
-        .call_0d:
-            call print_0d
-            jmp .back
-
-        .call_0a:
-            call print_0a
-            jmp .back
-        
-        .scroll:
-            call scroll
-            jmp .back
         
     print_char:
             push ax
@@ -55,12 +37,29 @@ section code align=16 vstart=0
             mov es, ax
             mov ah, 0x07
             mov al, cl
+            call get_cursor
+        .if_0d:
+            cmp cl, 0x0d
+            jne .if_0a
+            call print_0d
+            jmp .exit_print_char
+        .if_0a:
+            cmp cl, 0x0a
+            jne .if_other
+            add di, 80
+            cmp di, 2000
+            jle .exit_print_char
+            call scroll
+            jmp .exit_print_char
+        .if_other:
             shl di, 1
             mov [es:di], ax
             shr di, 1
             inc di
-            call set_cursor
         
+        .exit_print_char:
+            call set_cursor
+
             pop es
             pop bx
             pop ax
@@ -77,17 +76,10 @@ section code align=16 vstart=0
             xor dx, dx
             div bx
             sub di, dx
-            call set_cursor
 
             pop dx
             pop bx
             pop ax
-
-            ret
-
-    print_0a:
-            add di, 80
-            call set_cursor
 
             ret
 
@@ -116,7 +108,6 @@ section code align=16 vstart=0
             loop .cls
 
             shr di, 1
-            call set_cursor
 
             pop ds
             pop si
@@ -184,7 +175,6 @@ section code align=16 vstart=0
             mov ax, [data_section]
             mov ds, ax
             mov bx, text
-            call get_cursor
             call print_string
 
             jmp $
